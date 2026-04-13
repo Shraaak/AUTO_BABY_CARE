@@ -8,6 +8,5 @@ public class ThingsData : ScriptableObject
     public string itemName;
     public Sprite icon;
     public int price;
-    public float weight;
 
 }

@@ -31,8 +31,8 @@ public class CustomerMoveToCashierState : CustomerState
     public override void Update()
     {
         base.Update();
-
-        
+        if (customer.HasReachedDestination(customer.point.position, 1))
+            customer.stateMechine.ChangeState(customer.waitState);
         
     }
 

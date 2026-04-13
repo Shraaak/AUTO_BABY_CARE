@@ -13,3 +13,6 @@ MonoBehaviour:
   m_Name: TestThings
   m_EditorClassIdentifier: 
   itemName: test
+  icon: {fileID: 0}
+  price: 10
+  weight: 0

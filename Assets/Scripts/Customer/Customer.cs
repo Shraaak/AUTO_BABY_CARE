@@ -1,23 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
-using Palmmedia.ReportGenerator.Core.Parser.Analysis;
-using UnityEditor.EditorTools;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.AI;
 
 public class Customer : MonoBehaviour
 {
     [Tooltip("收银台")]
     public Cashier currentCashier;
+    public Transform point;
     [Tooltip("当前排队位置")]
     public int queueIndex;
     [Tooltip("所有商品池")]
     public List<ThingsData> allItems; 
     [Tooltip("状态配置")]
     public List<CustomerStateConfig> stateConfigs;
-    private Dictionary<CustomerStateType, CustomerStateConfig> configDict;
+    public Dictionary<CustomerStateType, CustomerStateConfig> configDict{get; private set;}
     public CustomerStateType currentState;
     public ThingsData tagertItem;
+    public int targetCount;
     public System.Action OnStateChanged;
     [Tooltip("大门位置")]
     public Transform door;
@@ -52,6 +53,9 @@ public class Customer : MonoBehaviour
     [Tooltip("最大等待")]
     public float maxWaitTime; 
     public bool isArrive;
+    [Tooltip("是否在等待购买")]
+    public bool isWaitingForBy;
+    public Image fillImage;
 #endregion
 
 
@@ -63,7 +67,6 @@ public class Customer : MonoBehaviour
     public CustomerMoveToCashierState moveToCashierState {get; private set;}
     public CustomerWaitState waitState {get; private set;}
     public CustomerLeaveState leaveState {get; private set;}
-    public CustomerCheckOutState checkOutState {get; private set;}
     #endregion
 
 
@@ -85,7 +88,6 @@ public class Customer : MonoBehaviour
         moveToCashierState = new CustomerMoveToCashierState(this, stateMechine, "Wonder");
         waitState = new CustomerWaitState(this, stateMechine, "Wait");
         leaveState = new CustomerLeaveState(this, stateMechine, "Wonder");
-        checkOutState = new CustomerCheckOutState(this, stateMechine, "CheckOut");
     }
 
     private void Start() {
@@ -192,7 +194,7 @@ public class Customer : MonoBehaviour
         int index = Random.Range(0, allItems.Count);
         tagertItem = allItems[index];
 
-        int targetCount = Random.Range(1, 4);
+        targetCount = Random.Range(1, 4);
         Debug.Log($"顾客想要：{tagertItem.itemName} x {targetCount}");
         takeCount = targetCount;
     }
@@ -249,7 +251,8 @@ public class Customer : MonoBehaviour
         }
 
         print("顾客前往收银台");
-        Transform point = currentCashier.GetQueuePoint(queueIndex);
+        point = currentCashier.GetQueuePoint(queueIndex);
+        agent.stoppingDistance = 0;
         agent.SetDestination(point.position);
 
     }
@@ -274,31 +277,23 @@ public class Customer : MonoBehaviour
     }
 #endregion
 
-    public bool CanCheckOut()
-    {
-        if(Input.GetKeyDown(KeyCode.E))
-            return true;
-        else 
-            return false;
-    }
-
-    public void Pay()
-    {
-        print("顾客成功支付");
-    }
-
     public void Angry()
     {
         print("顾客等待超时愤怒");
         ChangeStateType(CustomerStateType.Angry);
     }
 
+    public void Happy()
+    {
+        print("顾客开心");
+        ChangeStateType(CustomerStateType.Happy);
+    }
+
     public void leaveShop()
     {
-        Debug.Log("顾客结账完成，离开");
         agent.SetDestination(door.position);
 
-        if(HasReachedDestination(door.position)){
+        if(HasReachedDestination(door.position, 1)){
             Debug.Log("已到达门口");
             Destroy(gameObject);
         }
@@ -318,9 +313,9 @@ public class Customer : MonoBehaviour
     }
 
 
-    public bool HasReachedDestination(Vector3 target)
+    public bool HasReachedDestination(Vector3 target, int _dis)
     {
         float dis = Vector3.Distance(transform.position, target);
-        return dis <= 2f;
+        return dis <= _dis;
     }
 }

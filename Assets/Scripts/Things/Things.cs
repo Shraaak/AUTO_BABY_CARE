@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class Things : MonoBehaviour
 {
@@ -9,10 +11,18 @@ public class Things : MonoBehaviour
     public bool isPickUp = false;
     private Rigidbody rb;
     private Collider col;
+    public Image iconImage;
+    public TextMeshProUGUI amountText;
+    public int amount = 1;
 
     private void Awake() {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+    }
+
+    private void Update() {
+        if(amountText!=null)
+            amountText.text = $"x {amount}";
     }
 
     /// <summary>

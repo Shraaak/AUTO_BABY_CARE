@@ -23,7 +23,7 @@ public class CustomerFindState : CustomerState
     {
         base.Update();
         
-        if(targetSheft!=null && customer.HasReachedDestination(targetSheft.transform.position)){
+        if(targetSheft!=null && customer.HasReachedDestination(targetSheft.transform.position, 2)){
             Debug.Log("已到达相应货架");
             stateMechine.ChangeState(customer.moveToCashierState);
         }

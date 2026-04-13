@@ -11,6 +11,10 @@ public class CustomerLeaveState : CustomerState
     public override void Enter()
     {
         base.Enter();
+        if(customer.isSuccess)
+            customer.Happy();
+        else
+            customer.Angry();
         
     }
 

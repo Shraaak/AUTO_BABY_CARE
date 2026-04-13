@@ -2,9 +2,11 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    //单例
+    public static Player Instance{ get; private set; }
     
 #region 角色状态
-    private StateMechine stateMechine;
+    public StateMechine stateMechine {get; private set; }
     public PlayerIdleState idleState {get; private set;}
     public PlayerWalkState walkState {get; private set;}
     public PlayerRunState runState {get; private set;}
@@ -20,6 +22,8 @@ public class Player : MonoBehaviour
     public float turnSmoothTime = 0.1f;
     [Tooltip("拾取物品位置")]
     public Transform pickUpPoint;
+    [Tooltip("拾取货物位置")]
+    public Transform pickUpTruckPoint;
     [Tooltip("当前手持物品")]
     public Things currentThings;
 #endregion
@@ -77,6 +81,8 @@ public class Player : MonoBehaviour
 
     public void Awake()
     {
+        Instance = this;
+
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
 
@@ -102,8 +108,11 @@ public class Player : MonoBehaviour
     {
         stateMechine.currentState.Update(); 
 
-        if(Input.GetKeyDown(KeyCode.F))
+        if(Input.GetKeyDown(KeyCode.F)){
+            TryTakeCargo();
             TryCheckOut();
+        }
+            
     }
 
 #region 角色射线检测
@@ -145,6 +154,8 @@ public class Player : MonoBehaviour
     }
 #endregion
 
+
+
 #region 角色与Shelf的交互
     public bool TryAddItem()
     {
@@ -161,14 +172,17 @@ public class Player : MonoBehaviour
         
         Shelf shelf = lastHit.collider.GetComponent<Shelf>();
         ThingsData data = currentThings.thingsData;
-        bool isPut = shelf.AddItem(data);
+        bool isPut = shelf.AddItem(currentThings);
 
         return isPut;
     }
 #endregion
 
+
+
 #region 角色与Cashier的交互
-    public void TryCheckOut()
+    
+    void TryCheckOut()
     {
         //碰撞获取Cashier组件
         if (! CastHit) return;
@@ -190,9 +204,38 @@ public class Player : MonoBehaviour
             return;
         }
 
-        Debug.Log("结账成功");
+        if(customer.isWaitingForBy)
+        {
+            int money = customer.tagertItem.price * customer.takeCount;
+            GameEvents.OnCheckoutSuccess?.Invoke(money);
+            customer.isSuccess = true;
+
+            Debug.Log("结账成功");
+        }
+        else
+        {
+            customer.isSuccess = false;
+            Debug.Log("你超时了，顾客生气离开");
+        }
 
         currentCashier.Dequeue();
     }
+#endregion
+
+
+
+#region 角色与货车的交互
+    public void TryTakeCargo()
+    {
+        if (! CastHit) return;
+        print(lastHit.collider.name);
+
+        Truck currentTruck = lastHit.collider.GetComponent<Truck>();
+
+        if(currentTruck == null) return;
+
+        currentTruck.OnPlayerInteract();
+    }
+
 #endregion
 }

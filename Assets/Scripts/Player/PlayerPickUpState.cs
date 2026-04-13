@@ -52,6 +52,10 @@ public class PlayerPickUpState : PlayerState
             if (player.TryAddItem())
             {
                 Debug.Log("放置成功");
+
+                if(player.currentThings.amount > 0)
+                    return;
+                    
                 player.currentThings.DestroySelf();
                 player.currentThings = null;
                 stateMechine.ChangeState(player.idleState);

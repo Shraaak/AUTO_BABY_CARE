@@ -38,9 +38,18 @@ public class CustomerWantUI : MonoBehaviour
         {
             //显示商品
             icon.sprite = customer.tagertItem.icon;
+
+            customer.fillImage.gameObject.SetActive(false);
+        }
+        else if (customer.currentState == CustomerStateType.Wait)
+        {
+            customer.fillImage.gameObject.SetActive(true);
+            Debug.Log("Wait icon: " + config.icon);
+            icon.sprite = config.icon;
         }
         else
         {
+            customer.fillImage.gameObject.SetActive(false);
             icon.sprite = config.icon;
         }
     }

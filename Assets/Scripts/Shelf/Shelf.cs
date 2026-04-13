@@ -21,19 +21,35 @@ public class Shelf : MonoBehaviour
     /// </summary>
     /// <param name="amount"></param>
     /// <returns></returns>
-    public bool AddItem(ThingsData item, int amount = 1)
+    public bool AddItem(Things things)
     {
+        ThingsData item = things.thingsData;
+
         if (item != itemType){
             Debug.Log("不是对应sheft");
             return false;
         }
 
-        if(currentCount >= maxCapacity)
+        if (currentCount >= maxCapacity)
             return false;
-        
-        currentCount += amount;
-        currentCount = Mathf.Clamp(currentCount, 0, maxCapacity);
+
+        int space = maxCapacity - currentCount;
+
+        if (things.amount <= space)
+        {
+            // 能全放进去
+            currentCount += things.amount;
+            things.amount = 0;
+        }
+        else
+        {
+            // 放满
+            currentCount = maxCapacity;
+            things.amount -= space; // 剩余数量
+        }
+
         OnShelfChanged?.Invoke(currentCount, maxCapacity);
+
         return true;
     }
 

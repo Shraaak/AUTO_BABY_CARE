@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CustomerWaitState : CustomerState
@@ -11,7 +12,9 @@ public class CustomerWaitState : CustomerState
     public override void Enter()
     {
         base.Enter();
+        customer.ChangeStateType(CustomerStateType.Wait);
         customer.waitTimer = 0f;
+        customer.isWaitingForBy = true;
     }
 
     public override void Update()
@@ -19,17 +22,15 @@ public class CustomerWaitState : CustomerState
         base.Update();
 
         customer.waitTimer += Time.deltaTime;
+        customer.fillImage.fillAmount = customer.waitTimer/customer.maxWaitTime;
 
         //超时
         if (customer.waitTimer > customer.maxWaitTime)
         {
-            customer.isSuccess = false;
-
-            stateMechine.ChangeState(customer.checkOutState);
+            customer.isWaitingForBy = false;
+            customer.currentCashier.Dequeue();
+            stateMechine.ChangeState(customer.leaveState);
         }
-        if(customer.CanCheckOut()){
-            customer.isSuccess = true;
-            stateMechine.ChangeState(customer.checkOutState);
-        }
+        
     }
 }
