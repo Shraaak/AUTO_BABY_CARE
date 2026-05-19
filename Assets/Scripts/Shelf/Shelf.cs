@@ -60,12 +60,11 @@ public class Shelf : MonoBehaviour
     /// <returns></returns>
     public bool TakeItem(int amount)
     {
-
-        if((currentCount-=amount) <= 0)
+        // 修正：先判断数量是否足够，再扣减
+        if (currentCount < amount) 
             return false;
 
         currentCount -= amount;
-
         OnShelfChanged?.Invoke(currentCount, maxCapacity);
         return true;
     }

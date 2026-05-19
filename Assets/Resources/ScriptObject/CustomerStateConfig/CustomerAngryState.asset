@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: CustomerAngryState
   m_EditorClassIdentifier: 
   stateType: 5
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: d1d15190cecdb4645bca766e81b515fe, type: 3}
   duration: 0

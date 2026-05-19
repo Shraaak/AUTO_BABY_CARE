@@ -30,6 +30,7 @@ public class PlayerWalkState : PlayerState
     public override void Update()
     {
         base.Update();
+        
 
         //角色转向
         player.transform.rotation = Quaternion.Lerp(player.transform.rotation, 

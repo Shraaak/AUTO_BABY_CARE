@@ -15,6 +15,11 @@ public class PlayerPickUpState : PlayerState
             player.currentThings = things;
             things.PickUp(player.pickUpPoint);
         }
+
+        if (player.TryTakeItemFromShelf())
+        {
+            Debug.Log("获取");
+        }
     }
 
     public override void FixedUpdate()
@@ -49,6 +54,7 @@ public class PlayerPickUpState : PlayerState
 
         if (Input.GetKeyDown(KeyCode.F))
         {
+            
             if (player.TryAddItem())
             {
                 Debug.Log("放置成功");
@@ -63,6 +69,14 @@ public class PlayerPickUpState : PlayerState
             else
             {
                 Debug.Log("放置失败");
+            }
+
+            if (player.GetEat())
+            {
+                Debug.Log("喂食成功");
+                player.currentThings.DestroySelf();
+                player.currentThings = null;
+                stateMechine.ChangeState(player.idleState);
             }
         }
     }

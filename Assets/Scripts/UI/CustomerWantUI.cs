@@ -9,11 +9,6 @@ public class CustomerWantUI : MonoBehaviour
     public Image icon;
     public Customer customer;
 
-    void Start()
-    {
-        customer.OnStateChanged += UpdateUI;
-    }
-
     void Init(Customer c)
     {
         customer = c;
@@ -22,13 +17,6 @@ public class CustomerWantUI : MonoBehaviour
 
     public void UpdateUI()
     {
-        //无状态隐藏ui
-        if(customer.currentState == CustomerStateType.None)
-        {
-            gameObject.SetActive(false);
-            return;
-        }
-
         //有状态显示ui
         gameObject.SetActive(true);
 
@@ -44,7 +32,6 @@ public class CustomerWantUI : MonoBehaviour
         else if (customer.currentState == CustomerStateType.Wait)
         {
             customer.fillImage.gameObject.SetActive(true);
-            Debug.Log("Wait icon: " + config.icon);
             icon.sprite = config.icon;
         }
         else
@@ -55,6 +42,11 @@ public class CustomerWantUI : MonoBehaviour
     }
     
     private void OnDisable() {
-        customer.OnStateChanged -= UpdateUI;
+        EventCenter.Instance.RemoveEventListener("CustomerStateChange",UpdateUI);
+    }
+
+    private void OnEnable()
+    {
+        EventCenter.Instance.AddEventListener("CustomerStateChange",UpdateUI);
     }
 }

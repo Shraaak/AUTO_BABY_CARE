@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Cashier : MonoBehaviour
 {
+    public Transform tipShowPos;
     //排队点集合
     public Transform[] queuePoints;
     //每个位置的customer
@@ -11,10 +12,17 @@ public class Cashier : MonoBehaviour
 
     public Customer CurrentCustomer => queue.Count > 0 ? queue[0] : null;
 
+    void Update()
+    {
+    }
+
     //入队
     public int Enqueue(Customer customer)
     {
         queue.Add(customer);
+        Debug.Log("入队");
+        EventCenter.Instance.EventTrigger<string, Vector3>("ShowTips","有顾客在排队！", tipShowPos.position);
+        Invoke("HideTip", 0.6f);
         return queue.Count - 1;
     }
 
@@ -23,6 +31,7 @@ public class Cashier : MonoBehaviour
     {
         if (queue.Count == 0){
             Debug.Log("没有顾客");
+            EventCenter.Instance.EventTrigger("HideTips");
             return;
         }
 
@@ -55,5 +64,9 @@ public class Cashier : MonoBehaviour
         return queuePoints[index];
     }
 
+    void HideTip()
+    {
+        EventCenter.Instance.EventTrigger("HideTips");
+    }
     
 }

@@ -12,19 +12,20 @@ public class CustomerFindState : CustomerState
     public override void Enter()
     {
         base.Enter();
-        //随机生成想要的物品以及数量
+        // 随机生成想要的物品以及数量
         customer.GenerateRandomTarget();
         customer.ChangeStateType(CustomerStateType.Find);
         
-        targetSheft = customer.FindItem();
+        
     }
 
     public override void Update()
     {
         base.Update();
+        targetSheft = customer.FindItem();
         
         if(targetSheft!=null && customer.HasReachedDestination(targetSheft.transform.position, 2)){
-            Debug.Log("已到达相应货架");
+            // 已到达相应货架
             stateMechine.ChangeState(customer.moveToCashierState);
         }
     }

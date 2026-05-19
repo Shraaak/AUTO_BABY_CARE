@@ -6,17 +6,19 @@ TagManager:
   tags:
   - Things
   - Baby
+  - Activator
+  - bed
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Ground
   - Water
   - UI
   - Things
   - Shefts
   - Interact
-  - 
+  - Footprint
   - 
   - 
   - 

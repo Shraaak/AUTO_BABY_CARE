@@ -24,6 +24,8 @@ public class PlayerIdleState : PlayerState
 
         if(Input.GetKeyDown(KeyCode.E))
             stateMechine.ChangeState(player.pickUpState);
+        if(Input.GetKeyDown(KeyCode.F))
+            stateMechine.ChangeState(player.pickUpState);
         if(inputDir.sqrMagnitude >= 0.001)
             stateMechine.ChangeState(player.walkState);
     }

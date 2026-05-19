@@ -15,7 +15,6 @@ public class CustomerWonderState : CustomerState
         customer.isWondering = true;
         
         float waitTime = Random.Range(0f, 5f);
-        Debug.Log(waitTime);
         customer.StartCoroutine(customer.DecideTarget(waitTime));
     }
 
@@ -24,11 +23,11 @@ public class CustomerWonderState : CustomerState
         base.Update();
 
         if(customer.hasTarget && !customer.isWondering){
-            Debug.Log("顾客想买");
+            // 顾客想买
             stateMechine.ChangeState(customer.findState);
         }
         else if(!customer.hasTarget && !customer.isWondering){
-            Debug.Log("顾客不想买");
+            // 顾客不想买
             stateMechine.ChangeState(customer.leaveState);
         }
     }

@@ -20,7 +20,7 @@ public class PlayerState : IState
     }
     virtual public void Enter()
     {
-        Debug.Log("进入"+ animName +"状态");
+        player.anim.SetBool(animName, true);
     }
 
     virtual public void FixedUpdate() 
@@ -30,6 +30,8 @@ public class PlayerState : IState
 
     virtual public void Update()
     {
+        if (player.isInBabyDialog) return;
+
         inputX = Input.GetAxisRaw("Horizontal");
         inputZ = Input.GetAxisRaw("Vertical");
         inputDir = new Vector2(inputX, inputZ);
@@ -37,6 +39,6 @@ public class PlayerState : IState
 
     virtual public void Exit()
     {
-        Debug.Log("退出"+ animName +"状态");
+        player.anim.SetBool(animName, false);
     }
 }

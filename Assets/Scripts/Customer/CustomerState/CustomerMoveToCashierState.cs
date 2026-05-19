@@ -16,7 +16,7 @@ public class CustomerMoveToCashierState : CustomerState
 
         //货物充足
         if(customer.targetShelf.TakeItem(customer.takeCount)){
-            Debug.Log("顾客购买成功");
+            // 顾客购买成功 
             customer.JoinQueue();
             customer.MoveToQueuePoint();
         }
