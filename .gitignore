@@ -17,6 +17,7 @@
 .vs/
 .vscode/
 .idea/
+*.lscache
 *.csproj
 *.unityproj
 *.sln
@@ -42,6 +43,9 @@ Thumbs.db
 
 # =============== Unity crash reports ===============
 sysinfo.txt
+
+# =============== Plastic SCM local data ===============
+.plastic/
 
 # =============== Build outputs ===============
 *.apk
