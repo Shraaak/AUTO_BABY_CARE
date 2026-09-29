@@ -23,9 +23,11 @@ public class Customer : MonoBehaviour, IPoolable
     public System.Action OnStateChanged;
     [Tooltip("大门位置")]
     public Transform door;
+    
 
 #region 顾客参数
     private Rigidbody rb;
+    public Animator anim;
     [Header("闲逛设置")]
     public float wanderRadius = 8f;     // 闲逛范围
     public float minWonderWaitTime = 1.5f;    // 最小停顿
@@ -87,6 +89,7 @@ public class Customer : MonoBehaviour, IPoolable
     {
         rb = GetComponent<Rigidbody>();
         agent = GetComponent<NavMeshAgent>();
+        anim = GetComponentInChildren<Animator>();
 
         configDict = new Dictionary<CustomerStateType, CustomerStateConfig>();
         foreach (var config in stateConfigs)
@@ -95,11 +98,11 @@ public class Customer : MonoBehaviour, IPoolable
         }
 
         stateMechine = new StateMechine();
-        wonderState = new CustomerWonderState(this, stateMechine, "Wonder");
-        findState = new CustomerFindState(this, stateMechine, "Find");
-        moveToCashierState = new CustomerMoveToCashierState(this, stateMechine, "Wonder");
-        waitState = new CustomerWaitState(this, stateMechine, "Wait");
-        leaveState = new CustomerLeaveState(this, stateMechine, "Wonder");
+        wonderState = new CustomerWonderState(this, stateMechine, "Walk");
+        findState = new CustomerFindState(this, stateMechine, "Walk");
+        moveToCashierState = new CustomerMoveToCashierState(this, stateMechine, "Walk");
+        waitState = new CustomerWaitState(this, stateMechine, "Idle");
+        leaveState = new CustomerLeaveState(this, stateMechine, "Walk");
     }
 
     private void Start() {

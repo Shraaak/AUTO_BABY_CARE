@@ -1,4 +1,4 @@
-
+using UnityEngine;
 
 public class BabyHungryState : BabyWalkState
 {
@@ -9,17 +9,16 @@ public class BabyHungryState : BabyWalkState
     public override void Enter()
     {
         base.Enter();
+
+        baby.ShowTemporaryTip("宝宝肚子饿了");
         
         // 触发表现层的UI和LLM逻辑
         baby.TriggerNeedInteract("hunger");
-        baby.TriggerLLMMessage("hunger_request");
+        baby.TriggerLLMMessage("肚子好饿");
     }
 
     public override void Update()
     {
-        if (baby.hunger < baby.hungerThreshold - 10f)
-        {
-            stateMechine.ChangeState(baby.walkState);
-        }
+        baby.ChangeStateAfterNeedResolved();
     }
 }

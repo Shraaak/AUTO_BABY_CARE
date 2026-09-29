@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: CustomerFindState
   m_EditorClassIdentifier: 
   stateType: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 36a195b2c9af64e12bb499378e804650, type: 3}
   duration: 0

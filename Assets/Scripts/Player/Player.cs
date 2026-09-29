@@ -103,7 +103,7 @@ public class Player : MonoBehaviour
         idleState = new PlayerIdleState(this, stateMechine, "Idle");
         walkState = new PlayerWalkState(this, stateMechine, "Walk");
         runState = new PlayerRunState(this, stateMechine, "Run");
-        pickUpState = new PlayerPickUpState(this, stateMechine, "PickUp");
+        pickUpState = new PlayerPickUpState(this, stateMechine, "Carry");
         cleanFootprintState = new PlayerCleanFootprintState(this, stateMechine, "Clean");
     }
 
@@ -283,6 +283,7 @@ public class Player : MonoBehaviour
         ThingsData shelfItemData = shelf.itemType;
         GameObject itemObj = Instantiate(shelfItemData.perfeb);
         currentThings = itemObj.GetComponent<Things>();
+        currentThings.thingsData = shelfItemData;
         currentThings.PickUp(pickUpPoint);
         return true;
     }

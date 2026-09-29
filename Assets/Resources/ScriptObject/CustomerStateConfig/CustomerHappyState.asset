@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: CustomerHappyState
   m_EditorClassIdentifier: 
   stateType: 4
-  icon: {fileID: 21300000, guid: aa29cac2ae97bcd4dafe03757d4775b4, type: 3}
+  icon: {fileID: 21300000, guid: 7d051ea76e31b436ba4acbd4bfb32708, type: 3}
   duration: 0

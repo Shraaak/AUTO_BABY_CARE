@@ -9,12 +9,13 @@ using Newtonsoft.Json;
 public static class LLMClient
 {
     #region API 配置
-    // ===================== 这里粘贴你刚复制的完整API Key =====================
-    private const string API_KEY = "sk-46da5cdebd324c64993713092d06a5e8";
+    //完整API Key 
+    public const string API_KEY = "sk-46da5cdebd324c64993713092d06a5e8";
     // 固定用qwen-turbo，适配你的宝宝对话场景
-    private const string API_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
-    private const string TARGET_MODEL = "qwen-turbo";
+    public const string API_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
+    public const string TARGET_MODEL = "qwen-turbo";
     #endregion
+
 
 
     #region 本地关键词降级逻辑 
@@ -70,14 +71,23 @@ public static class LLMClient
                 while (!readTask.IsCompleted) yield return null;
 
                 var result = JsonConvert.DeserializeObject<DashScopeResponse>(readTask.Result);
-                string reply = result.output.choices[0].message.content;
-                
-                // 按场景动态判断正确回复
-                bool isCorrect = state == "bored" 
-                    ? reply.Contains("开心") || reply.Contains("嘻嘻") || reply.Contains("玩")
-                    : reply.Contains("睡") || reply.Contains("觉") || reply.Contains("乖") || reply.Contains("安静") || reply.Contains("睡啦");
-                
-                callback?.Invoke(reply, isCorrect);
+                string cont = result.output.choices[0].message.content;
+
+                BabyLLMResult babyResult = JsonConvert.DeserializeObject<BabyLLMResult>(cont);
+                if (babyResult == null ||
+                    string.IsNullOrWhiteSpace(babyResult.reply))
+                {
+                    FallbackLocalCheck(input, state, callback);
+                    yield break;
+                }
+                callback?.Invoke(
+                    babyResult.reply,
+                    babyResult.isCorrect
+                );
+            }
+            else
+            {
+                FallbackLocalCheck(input, state, callback);
             }
         }
     }
@@ -85,19 +95,28 @@ public static class LLMClient
     // 宝宝对话专用Prompt，固定返回软萌语气+符合意图的回复
     private static string BuildBabyPrompt(string input, string state)
     {
-        string scene = state == "bored" 
-            ? "宝宝现在很无聊，想要玩家陪玩。如果玩家的话是想陪你玩、哄你，就是正确的；如果玩家拒绝陪你、让你自己玩，就是错误的。" 
-            : "宝宝现在很困，想要睡觉。如果玩家的话是哄你睡觉、让你安静休息，就是正确的；如果玩家让你起来玩、吵你，就是错误的。";
+        string scene = state == "bored"
+            ? "宝宝很无聊。玩家愿意陪玩、安慰或抱抱属于正确；拒绝、赶走宝宝属于错误。"
+            : "宝宝很困。玩家哄睡、保持安静属于正确；让宝宝继续玩、制造吵闹属于错误。";
 
         return $@"
-            你是一个软萌的6岁小宝宝，说话简短符合婴儿，2-8个字。
-            规则：
-            1. 当前场景：{scene}
-            2. 正确的话，你要回复开心、乖巧的话；错误的话，你要回复委屈、闹脾气的话。
-            3. 只回复宝宝说的话，不要加其他内容。
+        你是一个6到8岁的小宝宝。
 
-            玩家对你说：{input}
-            ";
+        当前场景：
+        {scene}
+
+        请判断玩家的话是否满足宝宝的需求，并生成2到8个字的宝宝回复。
+
+        只返回以下JSON，不要解释，不要使用Markdown：
+
+        {{
+            ""reply"": ""宝宝说的话"",
+            ""isCorrect"": true
+        }}
+
+        玩家说：
+        {input}
+        ";
     }
 
     // 本地兜底逻辑
@@ -139,4 +158,10 @@ public static class LLMClient
     {
         public string content { get; set; }
     }
+
+    private class BabyLLMResult
+    {
+        public string reply { get; set; }
+        public bool isCorrect { get; set; }
+    }    
 }

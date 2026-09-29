@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using TMPro;
+using DG.Tweening;
 
 public class ResultManager : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class ResultManager : MonoBehaviour
 
     [Header("游戏时长配置")]
     [Tooltip("秒为单位")]
-    public float gameDuration = 300f;
+    public float gameDuration = 240f;
     private float remainingTime;
 
     [Header("健康值区间配置")]
@@ -27,8 +28,17 @@ public class ResultManager : MonoBehaviour
     public TextMeshProUGUI inComeText; // 显示结算结果文本
     public GameObject resultPanel; // 结算面板
 
+    [Header("结果UI动画")]
+    public float resultSlideOffsetX = 900f;
+    public float resultSlideDuration = 0.55f;
+    public Ease resultSlideEase = Ease.OutCubic;
+
     private Baby baby;
     private bool isGameOver; // 游戏是否结束
+    private RectTransform resultPanelRect;
+    private CanvasGroup resultPanelCanvasGroup;
+    private Vector2 resultPanelTargetPos;
+    private Sequence resultPanelSequence;
 
 
     void Awake()
@@ -38,12 +48,18 @@ public class ResultManager : MonoBehaviour
 
     void Start()
     {
+        InitResultPanelAnimation();
         resultPanel.SetActive(false);
         baby = Baby.Instance;
 
         // 初始化计时
         remainingTime = gameDuration;
         isGameOver = false;
+    }
+
+    private void OnDestroy()
+    {
+        resultPanelSequence?.Kill();
     }
 
     void Update()
@@ -103,7 +119,6 @@ public class ResultManager : MonoBehaviour
     private void GameOver(bool isSick)
     {
         isGameOver = true;
-        resultPanel.SetActive(true);
 
         if (isSick)
         {
@@ -113,15 +128,57 @@ public class ResultManager : MonoBehaviour
         }
         else
         {
-            // 时间到结束 → 正常结算收入
-            
+            // 时间到结束 → 正常结算收入 
             finalIncome = MainCanvasUI.Instance.currentMoney;
             //计算并更新健康值
             UpdateHealthValue();
         }
         inComeText.text = $"今日收入：\n" + finalIncome.ToString();
 
+        ShowResultPanel();
         Time.timeScale = 0;
+    }
+
+    private void InitResultPanelAnimation()
+    {
+        if (resultPanel == null) return;
+
+        resultPanelRect = resultPanel.GetComponent<RectTransform>();
+        resultPanelCanvasGroup = resultPanel.GetComponent<CanvasGroup>();
+        if (resultPanelCanvasGroup == null)
+        {
+            resultPanelCanvasGroup = resultPanel.AddComponent<CanvasGroup>();
+        }
+
+        if (resultPanelRect != null)
+        {
+            resultPanelTargetPos = resultPanelRect.anchoredPosition;
+        }
+    }
+
+    private void ShowResultPanel()
+    {
+        if (resultPanel == null) return;
+
+        resultPanel.SetActive(true);
+        resultPanelSequence?.Kill();
+
+        if (resultPanelRect == null)
+        {
+            return;
+        }
+
+        Vector2 startPos = resultPanelTargetPos + Vector2.left * resultSlideOffsetX;
+        resultPanelRect.anchoredPosition = startPos;
+        resultPanelCanvasGroup.alpha = 0f;
+
+        resultPanelSequence = DOTween.Sequence()
+            .SetUpdate(true)
+            .SetTarget(resultPanel);
+
+        resultPanelSequence
+            .Append(resultPanelRect.DOAnchorPos(resultPanelTargetPos, resultSlideDuration).SetEase(resultSlideEase))
+            .Join(resultPanelCanvasGroup.DOFade(1f, resultSlideDuration * 0.8f));
     }
 
     /// <summary>

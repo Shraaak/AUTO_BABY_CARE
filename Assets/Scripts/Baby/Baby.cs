@@ -52,6 +52,15 @@ public class Baby : MonoBehaviour
 
     public Collider babyCollider;
     public Rigidbody rb;
+    public Transform tipShowPos;
+
+    [Header("技能测试")]
+    [Tooltip("测试用目标点，调用 MoveToSkillTargetAndRelease 时使用")]
+    public Transform skillTarget;
+    [Tooltip("移动到技能目标点所需时间")]
+    public float skillMoveDuration = 1f;
+    [Tooltip("到达目标点的判定距离")]
+    public float skillArriveDistance = 0.05f;
 
 
 # endregion
@@ -70,6 +79,9 @@ public class Baby : MonoBehaviour
     public event System.Action OnDialogEnded;//对话结束事件
 
     private NavMeshAgent agent;
+    private Coroutine skillMoveCoroutine;
+    private bool isMovingToSkillTarget;
+
 
 #region 宝宝状态机
     public StateMechine stateMechine{ get; private set; }
@@ -133,7 +145,7 @@ public class Baby : MonoBehaviour
             stateMechine.currentState.Update();
     }
 
-#region 数据跟新
+#region 数据更新
 
     /// <summary>
     /// 基础数值增长
@@ -195,6 +207,8 @@ public class Baby : MonoBehaviour
 #region 移动逻辑
     public void Wander()
     {
+        if (isDialog) return;
+
         if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
@@ -266,14 +280,146 @@ public class Baby : MonoBehaviour
 
 
 
+#region 技能测试移动
+    /// <summary>
+    /// 使用 Inspector 里配置的 skillTarget 测试移动并释放技能。
+    /// </summary>
+    public void MoveToSkillTargetAndRelease()
+    {
+        if (skillTarget == null)
+        {
+            Debug.LogWarning("Baby 的 skillTarget 没有绑定，无法移动释放技能。");
+            return;
+        }
+
+        MoveToPositionAndReleaseSkill(skillTarget.position);
+    }
+
+    /// <summary>
+    /// 用 Vector3 插值移动到指定位置，到达后释放测试技能。
+    /// </summary>
+    public void MoveToPositionAndReleaseSkill(Vector3 targetPosition)
+    {
+        if (isPickedUp || isOnBed || isDialog)
+            return;
+
+        if (skillMoveCoroutine != null)
+        {
+            StopCoroutine(skillMoveCoroutine);
+        }
+
+        skillMoveCoroutine = StartCoroutine(MoveToPositionAndReleaseSkillRoutine(targetPosition));
+    }
+
+    private IEnumerator MoveToPositionAndReleaseSkillRoutine(Vector3 targetPosition)
+    {
+        isMovingToSkillTarget = true;
+        isWaiting = false;
+
+        bool agentWasEnabled = agent != null && agent.enabled;
+        bool rbWasKinematic = rb != null && rb.isKinematic;
+
+        if (agentWasEnabled)
+        {
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.ResetPath();
+                agent.velocity = Vector3.zero;
+            }
+
+            agent.enabled = false;
+        }
+
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        Vector3 startPosition = transform.position;
+        float duration = Mathf.Max(0.01f, skillMoveDuration);
+        float timer = 0f;
+
+        while (timer < duration && Vector3.Distance(transform.position, targetPosition) > skillArriveDistance)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / duration);
+            transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+
+            Vector3 lookDirection = targetPosition - transform.position;
+            lookDirection.y = 0f;
+            if (lookDirection.sqrMagnitude > 0.001f)
+            {
+                transform.rotation = Quaternion.LookRotation(lookDirection);
+            }
+
+            yield return null;
+        }
+
+        transform.position = targetPosition;
+        TestReleaseSkill();
+
+        if (rb != null)
+        {
+            rb.isKinematic = rbWasKinematic;
+        }
+
+        if (agentWasEnabled)
+        {
+            agent.enabled = true;
+            agent.speed = walkSpeed;
+
+            if (agent.isOnNavMesh)
+            {
+                agent.Warp(targetPosition);
+                agent.isStopped = false;
+            }
+        }
+
+        isMovingToSkillTarget = false;
+        skillMoveCoroutine = null;
+    }
+
+    /// <summary>
+    /// 临时技能函数，后续可以替换成正式技能逻辑。
+    /// </summary>
+    private void TestReleaseSkill()
+    {
+        Debug.Log("Baby 到达指定位置，释放测试技能。");
+    }
+#endregion
+
+
+
 #region 状态优先级切换
+
+    public void ShowTemporaryTip(string message)
+    {
+        if (tipShowPos == null)
+        {
+            Debug.LogWarning("Baby 的 tipShowPos 没有绑定，无法显示提示。");
+            return;
+        }
+
+        EventCenter.Instance.EventTrigger<string, Vector3>("ShowTips", message, tipShowPos.position);
+        CancelInvoke(nameof(HideTip));
+        Invoke(nameof(HideTip), 0.6f);
+    }
+
+    void HideTip()
+    {
+        EventCenter.Instance.EventTrigger("HideTips");
+    }
+
 /// <summary>
 /// 按优先级自动切换状态
 /// </summary>
-public void ChangeStatePriority()
-{
-    // 避免空引用
-    if (stateMechine == null) return;
+    public void ChangeStatePriority()
+    {
+        // 避免空引用
+        if (stateMechine == null) return;
 
     // 1. 最高优先级：生病（任意数值达到生病阈值）
     if (hunger <= sickThreshold || boredom <= sickThreshold || sleepy <= sickThreshold)
@@ -322,7 +468,24 @@ public void ChangeStatePriority()
         }
     }
 
-}
+    }
+
+    public void ChangeStateAfterNeedResolved()
+    {
+        if (stateMechine == null) return;
+
+        if (hunger > hungerThreshold && sleepy > sleepyThreshold && boredom > boredomThreshold)
+        {
+            if (stateMechine.currentState != walkState)
+            {
+                stateMechine.ChangeState(walkState);
+            }
+
+            return;
+        }
+
+        ChangeStatePriority();
+    }
 #endregion
 
 
@@ -425,15 +588,35 @@ public void ChangeStatePriority()
         string dialogType = isOnBed && isNeedSleepDialog ? "dialog_sleep_bed" : "dialog_" + currentTalkState;
         TriggerLLMMessage(dialogType);
 
-        // 强制停止宝宝移动
-        if (agent != null) 
+        StopMovingForDialog();
+    }
+
+    private void StopMovingForDialog()
+    {
+        isWaiting = false;
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
+            agent.isStopped = true;
+            agent.ResetPath();
             agent.velocity = Vector3.zero;
         }
+
         if (rb != null)
         {
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    private void ResumeMovingAfterDialog()
+    {
+        if (isOnBed) return;
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            SetNewWaitTime();
         }
     }
 
@@ -459,14 +642,16 @@ public void ChangeStatePriority()
         // 普通无聊/困意对话逻辑
         else if (currentTalkState == "bored")
         {
-            boredom = isCorrect ? Mathf.Max(0, boredom - correctReduce) : Mathf.Min(100, boredom + wrongAdd);
+            boredom = isCorrect ? maxSize : Mathf.Min(100, boredom - wrongAdd);
         }
         else if (currentTalkState == "sleepy")
         {
-            sleepy = isCorrect ? Mathf.Max(0, sleepy - correctReduce) : Mathf.Min(100, sleepy + wrongAdd);
+            sleepy = isCorrect ? Mathf.Min(100, sleepy + wrongAdd) : Mathf.Max(0, sleepy - correctReduce);
         }
 
         isDialog = false;
+        ResumeMovingAfterDialog();
+        ChangeStateAfterNeedResolved();
         OnDialogEnded?.Invoke();
     }
 #endregion
@@ -536,6 +721,8 @@ public void ChangeStatePriority()
     public void Eat()
     {
         hunger += 30;
+        ClampAll();
+        ChangeStateAfterNeedResolved();
     }
 
     public bool HasReachedDestination(Vector3 target, int _dis)

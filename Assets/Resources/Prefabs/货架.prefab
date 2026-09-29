@@ -495,8 +495,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemType: {fileID: 0}
-  maxCapacity: 10
-  currentCount: 10
+  maxCapacity: 5
+  currentCount: 5
 --- !u!1001 &4990536268203903640
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -508,6 +508,10 @@ PrefabInstance:
     - target: {fileID: 1439405093602326, guid: b1a631da59517174a9bed26422c523f9, type: 3}
       propertyPath: m_Name
       value: SM_Prop_Market_Aisle_End_Preset_01
+      objectReference: {fileID: 0}
+    - target: {fileID: 1439405093602326, guid: b1a631da59517174a9bed26422c523f9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4983238836873646, guid: b1a631da59517174a9bed26422c523f9, type: 3}
       propertyPath: m_LocalPosition.x

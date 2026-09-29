@@ -10,12 +10,15 @@ public class BabySleepyState : BabyState
     public override void Enter()
     {
         base.Enter();
+
+        baby.ShowTemporaryTip("宝宝肚子困了");
         baby.TriggerNeedInteract("sleepy");
+        baby.TriggerLLMMessage("好困我要睡觉");
     }
 
     public override void Update()
     {
-        base.Update();
+        baby.ChangeStateAfterNeedResolved();
     }
 
     public override void Exit()

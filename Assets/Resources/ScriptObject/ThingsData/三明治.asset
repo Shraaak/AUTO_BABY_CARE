@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22acca6c1bd874024a39eb6aa2738a93, type: 3}
+  m_Name: "\u4E09\u660E\u6CBB"
+  m_EditorClassIdentifier: 
+  itemName: "\u4E09\u660E\u6CBB"
+  icon: {fileID: 21300000, guid: 10a5a7142c1d84b7b934d7415d31ef13, type: 3}
+  price: 20
+  cost: 14
+  isCanEat: 1
+  perfeb: {fileID: 4376926361660785800, guid: cb06714b6f3384b669bc0c4275bd59a5, type: 3}

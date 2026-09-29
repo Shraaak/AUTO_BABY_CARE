@@ -16,7 +16,7 @@ public class CustomerState : IState
     }
     virtual public void Enter()
     {
-        
+        customer.anim.SetBool(animName, true);
     }
 
     virtual public void FixedUpdate() 
@@ -31,6 +31,6 @@ public class CustomerState : IState
 
     virtual public void Exit()
     {
-        
+        customer.anim.SetBool(animName, false);
     }
 }

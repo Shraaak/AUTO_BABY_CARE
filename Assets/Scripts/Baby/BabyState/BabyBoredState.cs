@@ -8,14 +8,15 @@ public class BabyBoredState : BabyWalkState
 
     public override void Enter()
     {
-        base.Update();
+        base.Enter();
         
+        baby.ShowTemporaryTip("宝宝好无聊啊");
         baby.TriggerNeedInteract("bored");
-        baby.TriggerLLMMessage("bored_request");
+        baby.TriggerLLMMessage("好无聊...");
     }
 
     public override void Update()
     {
-        base.Update();
+        baby.ChangeStateAfterNeedResolved();
     }
 }

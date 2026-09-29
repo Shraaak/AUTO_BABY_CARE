@@ -16,5 +16,5 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: db8355afe5d50dd409ea2f34cdf964fc, type: 3}
   price: 10
   cost: 5
-  isCanEat: 1
+  isCanEat: 0
   perfeb: {fileID: 4376926361660785800, guid: 9fa0f2dd674f240ba9bd6ed0e455babe, type: 3}
