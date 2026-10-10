@@ -10,7 +10,7 @@ public static class LLMClient
 {
     #region API 配置
     //完整API Key 
-    public const string API_KEY = "sk-46da5cdebd324c64993713092d06a5e8";
+    private const string API_KEY = "sk-46da5cdebd324c64993713092d06a5e8";
     // 固定用qwen-turbo，适配你的宝宝对话场景
     public const string API_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
     public const string TARGET_MODEL = "qwen-turbo";
